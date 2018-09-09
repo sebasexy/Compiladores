@@ -13,7 +13,8 @@ public class Q3 implements State{
 	public void nextState(StateContext stateContext, char c) {
 		if(c >= '0' && c <= '9'){
 			stateContext.setState(new Q3(), stateContext.token + c);
-		}else if(punctuation.contains(c)){
+		}
+		/*else if(punctuation.contains(c)){
 			stateContext.setState(new Q5(), Character.toString(c));
 		}
 		else if(arithmeticOperator.contains(c) || relationalOperator.contains(c)){
@@ -23,6 +24,7 @@ public class Q3 implements State{
 			//System.out.println("Reading "  + c + " sending to inital state");
 			stateContext.setState(new InitialState(), "");
 		}
+		*/
 		else{
 			stateContext.setState(new DeadState(), stateContext.token + c);
 		}

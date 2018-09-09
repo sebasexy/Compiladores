@@ -3,10 +3,14 @@ package lexxx;
 import java.util.List;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,31 +21,34 @@ import javax.swing.JFrame;
 
 import states.InitialState;
 import states.StateContext;
+import token.Token;
 
 
 public class LexicalAnalysis {
 	
 	private final static String path= "C:\\Users\\spide\\Desktop\\Tec\\9o semestre\\Compiladores\\Compilador";
+	private final static String symbolTable = "symbols.txt";
+	private final static String errorFile = "error.txt";
+	
 	private boolean haveFoundSpecial = false;
 	private int whiteSpaceCounter = 0;
 	
 	private final static List<String> keyWords = new ArrayList<String>(Arrays.asList("principal", "entero", "real", "logico", "si", "mientras", "regresa", "falso", "verdadero"));	
 	private final static List<Character> whiteSpaces = Arrays.asList('\t', '\n', '\r', ' ');
-	private final static List<Integer> wholeNumbersConstant = new ArrayList<Integer>(Arrays.asList(0,1,2,3,4,5,6,7,8,9));
 	private final static List<Character> arithmeticOperator = Arrays.asList('+', '-', '*', '/', '^');
 	private final static List<Character> relationalOperator = Arrays.asList('>', '<', '=');
 	private final static List<Character> logicalOperator = Arrays.asList('&', '|', '!');
 	private final static List<Character> punctuation = Arrays.asList(',', ';','(', ')', '{', '}');
-	private final static char asignationOperator = '=';
-	private final static char WHITESPACE = ' ';
 	
 	private StateContext state;
 	private List<LexicalError> error;
+	private List<Token> tokens;
 	
 	
 	public LexicalAnalysis(){
 		state = new StateContext();
 		error = new ArrayList<LexicalError>();
+		tokens = new ArrayList<Token>();
 	}
 	
 	public File readFile(){
@@ -91,11 +98,90 @@ public class LexicalAnalysis {
 		return text_preprocessed;
 	}	
 	
-	public void writeFile(File file){
-		
+	public void writeSymbolTable(List<Token> token){
+		try {
+			PrintWriter writer = new PrintWriter(path+symbolTable, "UTF-8");
+			System.out.println("Writing on: " + path+symbolTable);
+			for(int i = 0; i < token.size(); i++){
+				writer.println(token.get(i).getType() + " " +  token.get(i).getId() + " " + token.get(i).getLine() + " " + token.get(i).getColumn());
+			}
+			writer.close();
+		} catch (IOException ioe){
+			ioe.printStackTrace();
+		}
 	}
 	
+	public void writeErrors(List<LexicalError> error){
+		try{
+			PrintWriter writer = new PrintWriter(path+errorFile, "UTF-8");
+			System.out.println("Writing on: " + path+errorFile);
+			for(int i = 0; i < error.size(); i++){
+				writer.println(error.get(i).getErrorLine() + " " + error.get(i).getErrorCharacter() + " " + error.get(i).getErrorString());
+			}
+			writer.close();
+		}catch(IOException ioe){
+			ioe.printStackTrace();
+		}
+	}
 	
+	public List<String> finiteAutomata(List<String> characters){
+		List<String> tokens = new ArrayList<String>();
+		String currString;
+		char tmpChar;
+		char currChar;
+		
+		for(int i = 0; i < characters.size(); i++){
+			currString = characters.get(i);
+			for(int j = 0; j < currString.length(); j++){
+				currChar = currString.charAt(j);
+				
+				if(isntSpecialCharacter(currChar)){
+					this.state.nextState(currChar);
+				}
+				
+				else{
+					if(currChar == ' '){
+						if(this.state.isValidState()){
+							tokens.add(this.state.getInfo());
+						}else{
+							if(this.state.getInfo() != " ")
+								error.add(new LexicalError(i, j, this.state.getInfo()));
+						}
+					}
+					else if(currChar == '='){
+						if(this.state.isValidState()){
+							tokens.add(this.state.getInfo());
+						}else{
+							if(this.state.getInfo() != " ")
+								error.add(new LexicalError(i, j, this.state.getInfo()));
+						}
+						if(j+1 < currString.length()){
+							if((tmpChar = currString.charAt(j+1)) == '='){
+								tokens.add("==");
+								j = j+2;
+							}else{
+								tokens.add(Character.toString(currChar));
+							}
+						}
+						this.state.setState(new InitialState(), "");
+					}
+					else{
+						if(this.state.isValidState()){
+							tokens.add(this.state.getInfo());
+						}else{
+							if(this.state.getInfo() != " ")
+								error.add(new LexicalError(i, j, this.state.getInfo()));
+						}
+						tokens.add(Character.toString(currChar));
+					}
+					this.state.setState(new InitialState(), "");
+				}
+			}
+		}
+		return tokens;
+	}
+	
+	/*
 	public List<String> finiteAutomata(List<String> characters){
 		List<String> tokens = new ArrayList<String>();
 		String currString;
@@ -136,7 +222,6 @@ public class LexicalAnalysis {
 					}
 					if(currChar == )
 					this.state.nextState(currChar);
-					*/
 				}
 				//System.out.println("Char : " + currChar + " \nState: " + this.state.classType());
 			}
@@ -146,8 +231,12 @@ public class LexicalAnalysis {
 		return tokens;
 	}
 	
+	*/
 	public List<LexicalError> getErrors(){
 		return this.error;
+	}
+	public List<Token> getTokens(){
+		return this.tokens;
 	}
 	
 	/*
@@ -191,19 +280,21 @@ public class LexicalAnalysis {
 		
 		fileToRead = sexxxAnalysis.readFile();
 		preprocessedText = sexxxAnalysis.preprocess(fileToRead);
+		automata = sexxxAnalysis.finiteAutomata(preprocessedText);
 		
 		System.out.println("Preprocessed text: ");
 		for(int i = 0; i < preprocessedText.size(); i++){
 			System.out.print(preprocessedText.get(i));
 		}
-		System.out.println();
 		
-		automata = sexxxAnalysis.finiteAutomata(preprocessedText);
-		
-
-		System.out.println("By tokens:" );
+		/*
+		System.out.println("Tokens: ");
 		for(int i = 0; i < automata.size(); i++){
 			System.out.println(automata.get(i));
 		}
+		*/
+
+		sexxxAnalysis.writeSymbolTable(sexxxAnalysis.getTokens());
+		sexxxAnalysis.writeErrors(sexxxAnalysis.getErrors());
 	}
 }

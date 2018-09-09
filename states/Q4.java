@@ -14,6 +14,7 @@ public class Q4 implements State{
 		if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
 			stateContext.setState(new Q4(), stateContext.token + c);
 		}
+		/*
 		else if(punctuation.contains(c)){
 			stateContext.setState(new Q5(), Character.toString(c));
 		}
@@ -24,6 +25,7 @@ public class Q4 implements State{
 			//System.out.println("Reading "  + c + " sending to initial state");
 			stateContext.setState(new InitialState(), "");
 		}
+		*/
 		else{
 			stateContext.setState(new DeadState(), stateContext.token + c);
 		}

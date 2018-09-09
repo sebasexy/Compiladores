@@ -13,6 +13,9 @@ public class DeadState implements State {
 	private final static char WHITESPACE = ' ';
 	@Override
 	public void nextState(StateContext stateContext, char c) {
+		stateContext.setState(new DeadState(), stateContext.token + c);
+		
+		/*
 		if(c == WHITESPACE){
 			//System.out.println("Reading "  + c + " sending to inital state");
 			stateContext.setState(new InitialState(), "");
@@ -27,6 +30,8 @@ public class DeadState implements State {
 		}else{
 			stateContext.setState(new DeadState(), stateContext.token + c);
 		}
+		
+		*/
 		
 	}
 
