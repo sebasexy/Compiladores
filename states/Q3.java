@@ -19,6 +19,10 @@ public class Q3 implements State{
 		else if(arithmeticOperator.contains(c) || relationalOperator.contains(c)){
 			stateContext.setState(new Q6(), Character.toString(c));
 		}
+		else if(c == ' '){
+			//System.out.println("Reading "  + c + " sending to inital state");
+			stateContext.setState(new InitialState(), "");
+		}
 		else{
 			stateContext.setState(new DeadState(), stateContext.token + c);
 		}

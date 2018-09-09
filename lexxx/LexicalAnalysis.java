@@ -11,8 +11,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.naming.InitialContext;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+
+import states.InitialState;
+import states.StateContext;
 
 
 public class LexicalAnalysis {
@@ -31,9 +35,13 @@ public class LexicalAnalysis {
 	private final static char asignationOperator = '=';
 	private final static char WHITESPACE = ' ';
 	
+	private StateContext state;
+	private List<LexicalError> error;
+	
 	
 	public LexicalAnalysis(){
-	
+		state = new StateContext();
+		error = new ArrayList<LexicalError>();
 	}
 	
 	public File readFile(){
@@ -87,6 +95,62 @@ public class LexicalAnalysis {
 		
 	}
 	
+	
+	public List<String> finiteAutomata(List<String> characters){
+		List<String> tokens = new ArrayList<String>();
+		String currString;
+		char currChar;
+		
+		for(int i = 0; i < characters.size(); i++){
+			currString = characters.get(i);
+			for(int j = 0; j < currString.length(); j++){
+				currChar = currString.charAt(j);
+				
+				if(isntSpecialCharacter(currChar)){
+					this.state.nextState(currChar);
+				}
+				else{	
+					if(currChar == ' '){
+						if(this.state.isValidState()){
+							tokens.add(this.state.getInfo());
+						}else{
+							error.add(new LexicalError(i, j, this.state.getInfo()));
+						}
+						this.state.setState(new InitialState(), "");
+					}
+					else{
+						if(this.state.isValidState()){
+							tokens.add(this.state.getInfo());
+						}else{
+							error.add(new LexicalError(i, j, this.state.getInfo()));
+						}						
+						tokens.add(Character.toString(currChar));
+						this.state.setState(new InitialState(), "");
+					}					
+					/*
+					if(this.state.isValidState()){
+						tokens.add(this.state.getInfo());
+					}
+					else{
+						error.add(new LexicalError(i, j, this.state.getInfo()));
+					}
+					if(currChar == )
+					this.state.nextState(currChar);
+					*/
+				}
+				//System.out.println("Char : " + currChar + " \nState: " + this.state.classType());
+			}
+		}
+		tokens.add(this.state.getInfo());
+		
+		return tokens;
+	}
+	
+	public List<LexicalError> getErrors(){
+		return this.error;
+	}
+	
+	/*
 	public List<String> finiteAutomata(List<String> characters){
 		List<String> tokens = new ArrayList<String>();
 		StringBuilder builder = new StringBuilder();
@@ -111,6 +175,7 @@ public class LexicalAnalysis {
 		}
 		return tokens;
 	}
+	*/
 	
 	private boolean isntSpecialCharacter(char c){
 		return !whiteSpaces.contains(c) && !arithmeticOperator.contains(c) && !relationalOperator.contains(c) && !logicalOperator.contains(c) && !punctuation.contains(c);
@@ -122,6 +187,7 @@ public class LexicalAnalysis {
 		List<String> preprocessedText;
 		List<String> automata;
 		LexicalAnalysis sexxxAnalysis = new LexicalAnalysis();
+		List<LexicalError> errors = sexxxAnalysis.getErrors();
 		
 		fileToRead = sexxxAnalysis.readFile();
 		preprocessedText = sexxxAnalysis.preprocess(fileToRead);
@@ -134,12 +200,10 @@ public class LexicalAnalysis {
 		
 		automata = sexxxAnalysis.finiteAutomata(preprocessedText);
 		
-		
+
 		System.out.println("By tokens:" );
 		for(int i = 0; i < automata.size(); i++){
 			System.out.println(automata.get(i));
 		}
-		
-
 	}
 }

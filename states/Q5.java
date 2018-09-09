@@ -4,8 +4,13 @@ public class Q5 implements State{
 
 	@Override
 	public void nextState(StateContext stateContext, char c) {
-		stateContext.setState(new InitialState(), Character.toString(c));
-		stateContext.nextState(c);
+		if(c == ' '){
+			//System.out.println("Reading "  + c + " sending to inital state");
+			stateContext.setState(new InitialState(), "");
+		}else{
+			stateContext.setState(new DeadState(), stateContext.token + c);
+		}		
+		
 	}
 
 	@Override

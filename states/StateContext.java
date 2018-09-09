@@ -26,4 +26,8 @@ public class StateContext {
 		return this.state.classType();
 	}
 	
+	public String getInfo(){
+		return this.token;
+	}
+	
 }

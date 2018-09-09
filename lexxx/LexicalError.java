@@ -2,20 +2,30 @@ package lexxx;
 
 public class LexicalError {
 	
-	private short errorLine;
-	private short errorCharacter;
+	private int errorLine;
+	private int errorCharacter;
+	private String errorString;
 	
-	public LexicalError(short errorLine, short errorCharacter){
+	public LexicalError(int errorLine, int errorCharacter, String errorString){
 		this.errorLine = errorLine;
 		this.errorCharacter = errorCharacter;
+		this.errorString = errorString;
 	}
 	
-	public short getErrorLine(){
+	public int getErrorLine(){
 		return this.errorLine;
 	}
 	
-	public short getErrorCharacter(){
+	public int getErrorCharacter(){
 		return this.errorCharacter;
+	}
+	
+	public String getErrorString(){
+		return this.errorString;
+	}
+	
+	public void printErrors(){
+		System.out.println("Line: " + this.getErrorLine() + " Char: " + this.getErrorCharacter() + " String: " + this.getErrorString());
 	}
 
 }

@@ -14,6 +14,7 @@ public class DeadState implements State {
 	@Override
 	public void nextState(StateContext stateContext, char c) {
 		if(c == WHITESPACE){
+			//System.out.println("Reading "  + c + " sending to inital state");
 			stateContext.setState(new InitialState(), "");
 		}
 		else if(punctuation.contains(c) ||

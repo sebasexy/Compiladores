@@ -4,12 +4,15 @@ public class Q6 implements State{
 
 	@Override
 	public void nextState(StateContext stateContext, char c) {
+		//System.out.println("My tokens in Q6() : " + stateContext.token);
 		if(c == '='){
 			stateContext.setState(new Q6(), stateContext.token + c);
-		}else{
+		}else if(c == ' '){
 			stateContext.setState(new InitialState(), "");
-			stateContext.nextState(c);
 		}
+		else{
+			stateContext.setState(new DeadState(), stateContext.token + c);
+		}	
 	}
 
 	@Override

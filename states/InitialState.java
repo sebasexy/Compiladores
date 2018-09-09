@@ -26,6 +26,9 @@ public class InitialState implements State {
 		else if(arithmeticOperator.contains(c) || relationalOperator.contains(c) || logicalOperator.contains(c)){
 			stateContext.setState(new Q6(), Character.toString(c));
 		}
+		else if(c == ' '){
+			stateContext.setState(new InitialState(), "");
+		}
 		else{
 			stateContext.setState(new DeadState(), Character.toString(c));
 		}
@@ -40,5 +43,6 @@ public class InitialState implements State {
 	public String classType(){
 		return "INITIAL STATE";		
 	}
+	
 
 }

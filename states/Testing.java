@@ -1,5 +1,7 @@
 package states;
 
+import lexxx.LexicalError;
+
 public class Testing {
 
 	
@@ -12,6 +14,6 @@ public class Testing {
 			state.nextState(tokens[i]);
 			System.out.println(state.classType());
 		}
-		System.out.println(state.isValidState());
+		
 	}
 }
