@@ -20,6 +20,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import states.InitialState;
+import states.*;
 import states.StateContext;
 import token.Token;
 
@@ -42,13 +43,13 @@ public class LexicalAnalysis {
 	
 	private StateContext state;
 	private List<LexicalError> error;
-	private List<Token> tokens;
+	private List<Token> tokenTable;
 	
 	
 	public LexicalAnalysis(){
 		state = new StateContext();
 		error = new ArrayList<LexicalError>();
-		tokens = new ArrayList<Token>();
+		tokenTable = new ArrayList<Token>();
 	}
 	
 	public File readFile(){
@@ -103,7 +104,11 @@ public class LexicalAnalysis {
 			PrintWriter writer = new PrintWriter(path+symbolTable, "UTF-8");
 			System.out.println("Writing on: " + path+symbolTable);
 			for(int i = 0; i < token.size(); i++){
-				writer.println(token.get(i).getType() + " " +  token.get(i).getId() + " " + token.get(i).getLine() + " " + token.get(i).getColumn());
+				if(keyWords.contains(token.get(i).getId())){
+					writer.println(token.get(i).getId() + "\t" + "PALABRA RESERVADA" +  "\t" + token.get(i).getLine() + "\t" + token.get(i).getColumn());
+				}else{
+					writer.println(token.get(i).getId() + "\t" + token.get(i).getType() + "\t" + token.get(i).getLine() + "\t" + token.get(i).getColumn());
+				}				
 			}
 			writer.close();
 		} catch (IOException ioe){
@@ -115,9 +120,14 @@ public class LexicalAnalysis {
 		try{
 			PrintWriter writer = new PrintWriter(path+errorFile, "UTF-8");
 			System.out.println("Writing on: " + path+errorFile);
-			for(int i = 0; i < error.size(); i++){
-				writer.println(error.get(i).getErrorLine() + " " + error.get(i).getErrorCharacter() + " " + error.get(i).getErrorString());
+			if(error.size() > 0){
+				for(int i = 0; i < error.size(); i++){
+					writer.println(error.get(i).getErrorLine() + "\t" + error.get(i).getErrorCharacter() + "\t" + error.get(i).getErrorString());
+				}
+			}else{
+				writer.println("No LeXXXical errors on your Code");
 			}
+			
 			writer.close();
 		}catch(IOException ioe){
 			ioe.printStackTrace();
@@ -143,24 +153,34 @@ public class LexicalAnalysis {
 					if(currChar == ' '){
 						if(this.state.isValidState()){
 							tokens.add(this.state.getInfo());
+							tokenTable.add(new Token(i,j,this.state.classType(), this.state.getInfo()));
 						}else{
-							if(this.state.getInfo() != " ")
+							if(this.state.getInfo() != "" && this.state.getInfo() != null){
+								System.out.println(this.state.getInfo());
 								error.add(new LexicalError(i, j, this.state.getInfo()));
+							}
 						}
 					}
 					else if(currChar == '='){
 						if(this.state.isValidState()){
+							this.state.setState(new Q6(), "=");
 							tokens.add(this.state.getInfo());
+							tokenTable.add(new Token(i,j,this.state.classType(), this.state.getInfo()));
 						}else{
-							if(this.state.getInfo() != " ")
+							if(this.state.getInfo() != "" && this.state.getInfo() != null){
+								System.out.println(this.state.getInfo());
 								error.add(new LexicalError(i, j, this.state.getInfo()));
+							}
 						}
 						if(j+1 < currString.length()){
 							if((tmpChar = currString.charAt(j+1)) == '='){
+								this.state.setState(new Q6(), "==");
 								tokens.add("==");
+								tokenTable.add(new Token(i,j, this.state.classType(), "=="));
 								j = j+2;
 							}else{
 								tokens.add(Character.toString(currChar));
+								tokenTable.add(new Token(i,j, "OPERADOR", Character.toString(currChar)));
 							}
 						}
 						this.state.setState(new InitialState(), "");
@@ -168,11 +188,21 @@ public class LexicalAnalysis {
 					else{
 						if(this.state.isValidState()){
 							tokens.add(this.state.getInfo());
+							tokenTable.add(new Token(i,j,this.state.classType(), this.state.getInfo()));
 						}else{
-							if(this.state.getInfo() != " ")
-								error.add(new LexicalError(i, j, this.state.getInfo()));
+							if(this.state.getInfo() != "" && this.state.getInfo() != null){
+								System.out.println(this.state.getInfo());
+								error.add(new LexicalError(i, j-1, this.state.getInfo()));
+							}
+						}
+						if(arithmeticOperator.contains(currChar) || relationalOperator.contains(currChar) || logicalOperator.contains(currChar)){
+							this.state.setState(new Q6(), Character.toString(currChar));
+						}
+						if(punctuation.contains(currChar)){
+							this.state.setState(new Q5(), Character.toString(currChar));
 						}
 						tokens.add(Character.toString(currChar));
+						tokenTable.add(new Token(i,j+1,this.state.classType(), Character.toString(currChar)));
 					}
 					this.state.setState(new InitialState(), "");
 				}
@@ -236,7 +266,7 @@ public class LexicalAnalysis {
 		return this.error;
 	}
 	public List<Token> getTokens(){
-		return this.tokens;
+		return this.tokenTable;
 	}
 	
 	/*

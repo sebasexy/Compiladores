@@ -36,6 +36,6 @@ public class Q3 implements State{
 	}
 	
 	public String classType(){
-		return "Q3";		
+		return "CONSTANTE";		
 	}
 }

@@ -37,6 +37,6 @@ public class Q4 implements State{
 	}
 	
 	public String classType(){
-		return "Q4";		
+		return "IDENTIFICADOR";		
 	}
 }

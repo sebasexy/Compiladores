@@ -25,6 +25,6 @@ public class Q6 implements State{
 	}
 	
 	public String classType(){
-		return "Q6";		
+		return "OPERADOR";		
 	}
 }

@@ -40,7 +40,7 @@ public class Q1 implements State{
 	}
 	
 	public String classType(){
-		return "Q1";		
+		return "CONSTANTE";		
 	}
 
 }

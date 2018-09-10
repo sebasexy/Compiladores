@@ -24,6 +24,6 @@ public class Q5 implements State{
 	}
 	
 	public String classType(){
-		return "Q5";
+		return "PUNTUACION";
 	}
 }
